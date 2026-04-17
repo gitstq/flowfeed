@@ -14,6 +14,7 @@
 
 ## ✨ Features
 
+- **🌍 Multi-Language UI** — English, 简体中文, 繁體中文; switch via `--lang`, env var, or config
 - **16 Built-in Sources** — Weibo, Zhihu, Baidu, Douyin, Bilibili, HackerNews, GitHub Trending, ProductHunt, V2EX, Sspai, ThePaper, and more
 - **Smart Deduplication** — Cross-source dedup with MD5 fingerprinting, keeps highest-score version
 - **Composite Scoring** — Normalized hot score + rank bonus, sorted by relevance
@@ -23,7 +24,6 @@
 - **Async & Parallel** — Concurrent fetching with configurable concurrency limit
 - **Zero Heavy Dependencies** — Only httpx, rich, click, pyyaml, jinja2
 - **Configurable** — YAML config file with per-source settings
-- **YAML-driven** — All settings can be customized via `~/.flowfeed/config.yaml`
 
 ## 📡 Sources
 
@@ -163,6 +163,40 @@ flowfeed --proxy http://127.0.0.1:7890
 flowfeed -n 50
 ```
 
+### 🌍 Language Switching
+
+FlowFeed supports 3 UI languages. Priority order:
+
+1. **CLI flag** — `--lang`
+2. **Environment variable** — `FLOWFEED_LANG`
+3. **Config file** — `language` field
+4. **Auto-detect** — System locale
+5. **Fallback** — English
+
+```bash
+# English (default)
+flowfeed --lang en list-sources
+
+# 简体中文
+flowfeed --lang zh-CN list-sources
+
+# 繁體中文
+flowfeed --lang zh-TW list-sources
+
+# Via environment variable
+export FLOWFEED_LANG=zh-CN
+flowfeed list-sources
+
+# FLOWFEED_LANG also applies to all export formats (HTML, Markdown, RSS)
+flowfeed -f html -o dashboard.html
+```
+
+In config (`~/.flowfeed/config.yaml`):
+
+```yaml
+language: "zh-CN"  # en | zh-CN | zh-TW (empty = auto-detect)
+```
+
 ### Configuration File
 
 Create `~/.flowfeed/config.yaml`:
@@ -200,6 +234,7 @@ export:
 
 proxy: ""
 max_concurrent: 5
+language: ""  # en | zh-CN | zh-TW (empty = auto-detect)
 ```
 
 ## 💡 Design Philosophy
@@ -233,6 +268,7 @@ flowfeed/
 │   ├── cli.py             # CLI entry point (Click)
 │   ├── config.py          # YAML config management
 │   ├── engine.py          # Aggregation engine (fetch/dedup/filter/score)
+│   ├── i18n.py            # Internationalization (en/zh-CN/zh-TW)
 │   ├── sources/           # 16 news source adapters
 │   │   ├── base.py        # SourceBase abstract class + NewsItem model
 │   │   ├── weibo.py       # Weibo Hot Search

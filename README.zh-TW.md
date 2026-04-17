@@ -11,6 +11,7 @@
 
 ## ✨ 核心特性
 
+- **🌍 多語言介面** — English、簡體中文、繁體中文；透過 `--lang`、環境變數或設定檔切換
 - **16 個內建資料源** — 微博、知乎、百度、抖音、嗶哩嗶哩、HackerNews、GitHub Trending、ProductHunt、V2EX、少數派、澎湃新聞等
 - **智慧去重** — 基於 MD5 指紋的跨源去重，保留最高分版本
 - **綜合評分** — 歸一化熱度 + 排名加權，按相關性排序
@@ -159,6 +160,40 @@ flowfeed --proxy http://127.0.0.1:7890
 flowfeed -n 50
 ```
 
+### 🌍 語言切換
+
+FlowFeed 支援 3 種介面語言，優先順序如下：
+
+1. **CLI 參數** — `--lang`
+2. **環境變數** — `FLOWFEED_LANG`
+3. **設定檔** — `language` 欄位
+4. **自動偵測** — 系統語言
+5. **兜底** — 英文
+
+```bash
+# English（預設）
+flowfeed --lang en list-sources
+
+# 簡體中文
+flowfeed --lang zh-CN list-sources
+
+# 繁體中文
+flowfeed --lang zh-TW list-sources
+
+# 透過環境變數設定
+export FLOWFEED_LANG=zh-TW
+flowfeed list-sources
+
+# 語言設定同樣適用於所有匯出格式（HTML、Markdown、RSS）
+flowfeed -f html -o dashboard.html
+```
+
+在設定檔（`~/.flowfeed/config.yaml`）中設定：
+
+```yaml
+language: "zh-TW"  # en | zh-CN | zh-TW（留空 = 自動偵測）
+```
+
 ### 設定檔
 
 建立 `~/.flowfeed/config.yaml`：
@@ -196,6 +231,7 @@ export:
 
 proxy: ""
 max_concurrent: 5
+language: ""  # en | zh-CN | zh-TW（留空 = 自動偵測）
 ```
 
 ## 💡 設計理念
