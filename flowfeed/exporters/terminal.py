@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from flowfeed.i18n import t
 from flowfeed.sources.base import NewsItem
 
 
@@ -19,7 +20,7 @@ class TerminalExporter:
 
     def export(self, items: list[NewsItem], title: str = "FlowFeed 📡") -> None:
         if not items:
-            self.console.print("[yellow]No items to display.[/yellow]")
+            self.console.print(f"[yellow]{t('term.no_items')}[/yellow]")
             return
 
         # Group by source
@@ -31,8 +32,8 @@ class TerminalExporter:
         self.console.print()
         self.console.print(
             Panel(
-                f"[bold cyan]🔥 FlowFeed[/bold cyan] — {len(items)} items from {len(by_source)} sources\n"
-                f"[dim]Sorted by composite hot score[/dim]",
+                f"[bold cyan]🔥 FlowFeed[/bold cyan] — {t('term.header', items=len(items), sources=len(by_source))}\n"
+                f"[dim]{t('term.header_sub')}[/dim]",
                 border_style="cyan",
             )
         )
@@ -45,17 +46,17 @@ class TerminalExporter:
 
     def _render_full_table(self, items: list[NewsItem], limit: int = 50) -> None:
         table = Table(
-            title="📋 Top Stories",
+            title=f"📋 {t('term.top_stories')}",
             show_header=True,
             header_style="bold magenta",
             border_style="dim",
             title_style="bold",
         )
-        table.add_column("#", style="dim", width=4, justify="right")
-        table.add_column("Score", style="yellow", width=6, justify="right")
-        table.add_column("Title", style="bold white", min_width=40, no_wrap=False)
-        table.add_column("Source", style="cyan", width=14)
-        table.add_column("Category", style="green", width=12)
+        table.add_column(t("term.col_rank"), style="dim", width=4, justify="right")
+        table.add_column(t("term.col_score"), style="yellow", width=6, justify="right")
+        table.add_column(t("term.col_title"), style="bold white", min_width=40, no_wrap=False)
+        table.add_column(t("term.col_source"), style="cyan", width=14)
+        table.add_column(t("term.col_category"), style="green", width=12)
 
         for item in items[:limit]:
             # Truncate title for display
@@ -73,13 +74,13 @@ class TerminalExporter:
 
     def _render_source_summary(self, by_source: dict[str, list[NewsItem]]) -> None:
         table = Table(
-            title="📊 Source Summary",
+            title=f"📊 {t('term.source_summary')}",
             show_header=True,
             header_style="bold blue",
             border_style="dim",
         )
-        table.add_column("Source", style="cyan", min_width=16)
-        table.add_column("Items", style="white", justify="right", width=6)
+        table.add_column(t("term.source_col_source"), style="cyan", min_width=16)
+        table.add_column(t("term.source_col_items"), style="white", justify="right", width=6)
 
         for source_name, source_items in sorted(by_source.items(), key=lambda x: -len(x[1])):
             table.add_row(source_name, str(len(source_items)))

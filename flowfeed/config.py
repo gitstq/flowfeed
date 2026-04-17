@@ -67,6 +67,7 @@ class FlowFeedConfig:
     scheduler: SchedulerConfig = field(default_factory=SchedulerConfig)
     proxy: str = ""
     max_concurrent: int = 5
+    language: str = ""  # en, zh-CN, zh-TW; empty = auto-detect
     user_agent: str = (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
         "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -85,7 +86,8 @@ def load_config(config_path: Optional[str | Path] = None) -> FlowFeedConfig:
             raw = yaml.safe_load(f) or {}
         return _parse_config(raw)
     except Exception as e:
-        print(f"⚠️  Failed to load config from {path}: {e}")
+        from flowfeed.i18n import t
+        print(f"⚠️  {t('config.load_failed', path=path, err=e)}")
         return FlowFeedConfig()
 
 
@@ -139,6 +141,11 @@ def _parse_config(raw: dict) -> FlowFeedConfig:
     # Global settings
     cfg.proxy = os.environ.get("FLOWFEED_PROXY", raw.get("proxy", ""))
     cfg.max_concurrent = raw.get("max_concurrent", 5)
+
+    # Language
+    lang = os.environ.get("FLOWFEED_LANG", "") or raw.get("language", "")
+    if lang:
+        cfg.language = lang
 
     return cfg
 
@@ -223,4 +230,5 @@ scheduler:
 # Global settings
 proxy: ""                   # HTTP proxy, e.g. http://127.0.0.1:7890
 max_concurrent: 5           # Max concurrent source fetches
+language: ""                # UI language: en, zh-CN, zh-TW (empty = auto-detect)
 """

@@ -9,11 +9,12 @@ from typing import TextIO
 
 from jinja2 import Template
 
+from flowfeed.i18n import t
 from flowfeed.sources.base import NewsItem
 
 HTML_TEMPLATE = Template("""\
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="{{ html_lang }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -155,20 +156,20 @@ HTML_TEMPLATE = Template("""\
     <div class="container">
         <div class="header">
             <h1>📡 FlowFeed</h1>
-            <p class="meta">{{ generated_at }} | {{ total_items }} items from {{ total_sources }} sources</p>
+            <p class="meta">{{ meta_text }}</p>
         </div>
         <div class="stats">
             <div class="stat-card">
                 <div class="value">{{ total_items }}</div>
-                <div class="label">Total Items</div>
+                <div class="label">{{ stat_total }}</div>
             </div>
             <div class="stat-card">
                 <div class="value">{{ total_sources }}</div>
-                <div class="label">Sources</div>
+                <div class="label">{{ stat_sources }}</div>
             </div>
             <div class="stat-card">
                 <div class="value">{{ top_score }}</div>
-                <div class="label">Top Score</div>
+                <div class="label">{{ stat_top_score }}</div>
             </div>
         </div>
         {% for source_name, source_items in grouped.items() %}
@@ -194,7 +195,7 @@ HTML_TEMPLATE = Template("""\
         </div>
         {% endfor %}
         <div class="footer">
-            <p>Powered by <a href="https://github.com/gitstq/flowfeed">FlowFeed</a> — Lightweight News Aggregation Engine</p>
+            <p>{{ footer_text }}</p>
         </div>
     </div>
 </body>
@@ -222,11 +223,16 @@ class HTMLReportExporter:
 
         html = HTML_TEMPLATE.render(
             title=title,
-            generated_at=now,
+            html_lang=t("html.lang"),
+            meta_text=t("html.meta", time=now, items=len(items), sources=len(grouped)),
+            stat_total=t("html.stat_total"),
+            stat_sources=t("html.stat_sources"),
+            stat_top_score=t("html.stat_top_score"),
             total_items=len(items),
             total_sources=len(grouped),
             top_score=top_score,
             grouped=grouped,
+            footer_text=t("html.footer"),
         )
 
         if output is not None:

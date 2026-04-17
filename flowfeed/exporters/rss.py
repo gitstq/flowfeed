@@ -8,18 +8,19 @@ from email.utils import formatdate
 from pathlib import Path
 from typing import TextIO
 
+from flowfeed.i18n import t
 from flowfeed.sources.base import NewsItem
 
 RSS_TEMPLATE = """\
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>FlowFeed — Aggregated News Feed</title>
+    <title>{rss_title}</title>
     <link>https://github.com/gitstq/flowfeed</link>
-    <description>Real-time aggregated news from multiple sources</description>
-    <language>zh-CN</language>
+    <description>{rss_description}</description>
+    <language>{rss_language}</language>
     <lastBuildDate>{build_date}</lastBuildDate>
-    <generator>FlowFeed v1.0.0</generator>
+    <generator>FlowFeed v1.1.0</generator>
     {items}
   </channel>
 </rss>
@@ -68,6 +69,9 @@ class RSSExporter:
             ))
 
         result = RSS_TEMPLATE.format(
+            rss_title=t("rss.title"),
+            rss_description=t("rss.description"),
+            rss_language=t("rss.language"),
             build_date=build_date,
             items="\n".join(item_xmls),
         )

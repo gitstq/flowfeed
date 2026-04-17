@@ -16,6 +16,7 @@ from typing import Optional
 from rich.console import Console
 
 from flowfeed.config import FlowFeedConfig, SourceConfig
+from flowfeed.i18n import t
 from flowfeed.sources.base import FetchError, NewsItem, SourceBase
 
 console = Console(stderr=True)
@@ -36,14 +37,14 @@ class AggregationResult:
 
     def summary(self) -> str:
         lines = [
-            f"📊 Fetch completed in {self.fetch_duration:.2f}s",
-            f"   Total fetched: {self.total_fetched}",
-            f"   After dedup:   {self.total_after_dedup}",
-            f"   After filter:  {self.total_after_filter}",
-            f"   Sources:       {len(self.source_stats)} successful, {len(self.errors)} failed",
+            f"📊 {t('engine.fetch_completed', dur=self.fetch_duration)}",
+            f"   {t('engine.total_fetched', n=self.total_fetched)}",
+            f"   {t('engine.after_dedup', n=self.total_after_dedup)}",
+            f"   {t('engine.after_filter', n=self.total_after_filter)}",
+            f"   {t('engine.sources_ok_fail', ok=len(self.source_stats), fail=len(self.errors))}",
         ]
         if self.errors:
-            lines.append("   ❌ Failed sources:")
+            lines.append(f"   ❌ {t('engine.failed_sources')}")
             for err in self.errors[:5]:
                 lines.append(f"      • {err}")
         return "\n".join(lines)
@@ -71,7 +72,7 @@ class AggregationEngine:
         sources = self._select_sources(source_ids, count_per_source)
 
         if not sources:
-            console.print("[yellow]⚠️  No enabled sources found. Check your config.[/yellow]")
+            console.print(f"[yellow]⚠️  {t('engine.no_enabled_sources')}[/yellow]")
             return result
 
         # Step 2: Parallel fetch
@@ -115,7 +116,7 @@ class AggregationEngine:
 
         for src_id in target_ids:
             if src_id not in SOURCE_REGISTRY:
-                console.print(f"[yellow]⚠️  Unknown source: {src_id}[/yellow]")
+                console.print(f"[yellow]⚠️  {t('engine.unknown_source', id=src_id)}[/yellow]")
                 continue
 
             src_config = self.config.sources.get(src_id)
@@ -130,7 +131,7 @@ class AggregationEngine:
                 source = cls(timeout=timeout)
                 sources.append(source)
             except Exception as e:
-                console.print(f"[red]❌ Failed to init source {src_id}: {e}[/red]")
+                console.print(f"[red]❌ {t('engine.init_source_failed', id=src_id, err=e)}[/red]")
 
         return sources
 
@@ -146,9 +147,9 @@ class AggregationEngine:
         async def fetch_one(source: SourceBase) -> tuple[list[NewsItem], str, dict, Optional[str]]:
             try:
                 async with semaphore:
-                    console.print(f"📡 Fetching from [cyan]{source.source_name}[/cyan]...")
+                    console.print(f"📡 {t('engine.fetching_from', name=source.source_name)}")
                     items = await source.fetch(count=30)
-                    console.print(f"   ✅ {source.source_name}: {len(items)} items")
+                    console.print(f"   ✅ {t('engine.fetch_ok', name=source.source_name, n=len(items))}")
                     stat = {
                         "count": len(items),
                         "duration": "?",
